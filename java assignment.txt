@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.1.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>in.bushansirgur.springbootcrud</groupId>
+	<artifactId>springbootcrudapi</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>springbootcrudapi</name>
+	<description>Demo project for Spring Boot</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<start-class>in.bushansirgur.springbootcrud.springbootcrudapi.SpringbootcrudapiApplication</start-class>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>jstl</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+Next, let’s create a Database and respective table for the application
+
+To create a database, run this command
+CREATE DATABASE crudapi;
+USE crudapi;
+CREATE TABLE tbl_employee
+(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255),
+    gender VARCHAR(255),
+    department VARCHAR(255),
+    dob DATE
+);
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+
+spring.datasource.url=jdbc:mysql://localhost:3306/crudapi
+spring.datasource.username=root
+spring.datasource.password=
+package in.bushansirgur.springbootcrud.springbootcrudapi;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class SpringbootcrudapiApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringbootcrudapiApplication.class, args);
+	}
+package in.bushansirgur.springbootcrud.springbootcrudapi.model;
+
+import java.sql.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "tbl_employee")
+public class Employee {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column
+	private Integer id;
+	@Column
+	private String name;
+	@Column
+	private String gender;
+	@Column
+	private String department;
+	@Column
+	private Date dob;
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getGender() {
+		return gender;
+	}
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+	public String getDepartment() {
+		return department;
+	}
+	public void setDepartment(String department) {
+		this.department = department;
+	}
+	public Date getDob() {
+		return dob;
+	}
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + ", gender=" + gender + ", department=" + department + ", dob="
+				+ dob + "]";
+	}
+	
+}
+package in.bushansirgur.springbootcrud.springbootcrudapi.dao;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import in.bushansirgur.springbootcrud.springbootcrudapi.model.Employee;
+
+@Repository
+public class EmployeeDAOImpl implements EmployeeDAO {
+
+	@Autowired
+	private EntityManager entityManager;
+	
+	@Override
+	public List<Employee> get() {
+		Session currentSession = entityManager.unwrap(Session.class);
+		Query<Employee> query = currentSession.createQuery("from Employee", Employee.class);
+		List<Employee> list = query.getResultList();
+		return list;
+	}
+
+	@Override
+	public Employee get(int id) {
+		Session currentSession = entityManager.unwrap(Session.class);
+		Employee employeeObj = currentSession.get(Employee.class, id);
+		return employeeObj;
+	}
+
+	@Override
+	public void save(Employee employee) {
+		Session currentSession = entityManager.unwrap(Session.class);
+		currentSession.saveOrUpdate(employee);
+	}
+
+	@Override
+	public void delete(int id) {
+		Session currentSession = entityManager.unwrap(Session.class);
+		Employee employeeObj = currentSession.get(Employee.class, id);
+		currentSession.delete(employeeObj);
+	}
+
+}package in.bushansirgur.springbootcrud.springbootcrudapi.dao;
+
+import java.util.List;
+
+import in.bushansirgur.springbootcrud.springbootcrudapi.model.Employee;
+
+public interface EmployeeDAO {
+	
+	List<Employee> get();
+	
+	Employee get(int id);
+	
+	void save(Employee employee);
+	
+	void delete(int id);
+}
